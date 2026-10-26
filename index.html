@@ -1,1 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CLOGSHIELD | Prototype Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0b1220;
+      color: #e2e8f0;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+    }
+    main { max-width: 950px; margin: auto; padding: 24px; }
+    h1 { color: #38bdf8; margin-bottom: 0; }
+    h2 { margin-top: 0; font-size: 1.2rem; }
+    .subtitle { color: #94a3b8; }
+    .notice {
+      background: #332a10;
+      border: 1px solid #a87916;
+      padding: 14px;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: #172235;
+      padding: 20px;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .value { font-size: 2rem; font-weight: 700; }
+    .normal { color: #4ade80; }
+    .warning { color: #facc15; }
+    .high { color: #fb7185; }
+    label { display: block; margin-bottom: 8px; }
+    input[type="range"] { width: 100%; }
+    button {
+      background: #38bdf8;
+      color: #082032;
+      border: 0;
+      padding: 11px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: 700;
+      margin: 5px 5px 5px 0;
+    }
+    button.secondary { background: #cbd5e1; }
+    button:disabled { cursor: not-allowed; opacity: .5; }
+    #events {
+      max-height: 240px;
+      overflow-y: auto;
+      padding-left: 22px;
+      overflow-wrap: anywhere;
+    }
+    #events li { margin-bottom: 8px; }
+    .small { font-size: .9rem; color: #b8c4d6; }
+    footer { color: #94a3b8; font-size: .85rem; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>CLOGSHIELD</h1>
+    <p class="subtitle">
+      Sewer-Level Monitoring — Software Proof of Concept
+    </p>
+  </header>
 
+  <div class="notice">
+    SIMULATION ONLY: Readings are manually generated.
+    No sensors, pumps, valves, or real sewers are connected.
+    High water level does not confirm a blockage.
+  </div>
+
+  <section class="grid" aria-label="Monitoring summary">
+    <div class="card">
+      <h2>Simulated Node</h2>
+      <div class="value">CS-001</div>
+      <p>Data source: browser simulation</p>
+    </div>
+
+    <div class="card">
+      <h2>Water Level</h2>
+      <div class="value"><span id="levelValue">30</span> cm</div>
+      <p>Illustrative range: 0–100 cm</p>
+    </div>
+
+    <div class="card">
+      <h2>Level Classification</h2>
+      <div id="status" class="value normal" role="status">NORMAL</div>
+      <p id="recommendation">Continue monitoring.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Simulate Sensor Input</h2>
+    <label for="levelSlider">
+      Move the slider to change the simulated water level:
+    </label>
+    <input
+      id="levelSlider"
+      type="range"
+      min="0"
+      max="100"
+      value="30"
+      step="1"
+    >
+    <p class="small">
+      Demonstration thresholds: below 50 cm = normal;
+      50–79 cm = warning; 80 cm and above = high.
+      These values are not field-calibrated.
+    </p>
+    <button id="normalButton">Normal: 30 cm</button>
+    <button id="warningButton">Warning: 65 cm</button>
+    <button id="highButton">High: 90 cm</button>
+  </section>
+
+  <section class="card">
+    <h2>Simulated Mitigation</h2>
+    <p>
+      Demonstrate the proposed sequence:
+      air agitation → water flushing → verification reminder.
+    </p>
+    <button id="mitigationButton">Run Simulated Sequence</button>
+    <button id="resetButton" class="secondary">Reset Demo</button>
+    <p id="actuatorStatus" role="status">Simulation idle.</p>
+    <p class="small">
+      This animation does not change the water-level reading or
+      prove sediment removal. Real effectiveness requires testing.
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>Event Log</h2>
+    <ul id="events" aria-label="Recent simulation events"></ul>
+  </section>
+
+  <section class="card">
+    <h2>Built-in Classification Tests</h2>
+    <button id="testButton" class="secondary">Run Tests</button>
+    <p id="testResult" role="status">Tests not run yet.</p>
+  </section>
+
+  <section class="card">
+    <h2>Architecture and Current Scope</h2>
+    <p>
+      Current demo: slider input → threshold classification →
+      on-screen alert → simulated mitigation sequence.
+    </p>
+    <p>
+      Proposed future system: ultrasonic and pressure sensors →
+      ESP32 → communication service → dashboard →
+      supervised actuator control.
+    </p>
+    <p class="small">
+      Not implemented: hardware integration, sensor fusion,
+      cloud storage, remote notifications, machine learning,
+      and field-validated blockage detection.
+      Events are stored in browser memory only and disappear
+      when this page is refreshed.
+    </p>
+  </section>
+
+  <footer>
+    Student prototype. Do not use this demo to control real equipment.
+    Source-code license: MIT; see the source header.
+  </footer>
+</main>
+
+<script>
+/*
+MIT License
+
+Copyright (c) 2026 CLOGSHIELD Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+*/
+
+"use strict";
+
+const slider = document.getElementById("levelSlider");
+const levelValue = document.getElementById("levelValue");
+const statusElement = document.getElementById("status");
+const recommendation = document.getElementById("recommendation");
+const eventList = document.getElementById("events");
+const actuatorStatus = document.getElementById("actuatorStatus");
+const mitigationButton = document.getElementById("mitigationButton");
+
+let previousClassification = null;
+let sequenceRunning = false;
+let timers = [];
+
+function classifyLevel(level) {
+  if (!Number.isFinite(level) || level < 0 || level > 100) {
+    throw new RangeError("Level must be between 0 and 100 cm.");
+  }
+  if (level >= 80) return "HIGH";
+  if (level >= 50) return "WARNING";
+  return "NORMAL";
+}
+
+function logEvent(message) {
+  const entry = document.createElement("li");
+  entry.textContent =
+    new Date().toLocaleTimeString() + " — " + message;
+  eventList.prepend(entry);
+
+  while (eventList.children.length > 60) {
+    eventList.lastElementChild.remove();
+  }
+}
+
+function updateLevel(value) {
+  const level = Number(value);
+  const classification = classifyLevel(level);
+
+  slider.value = String(level);
+  levelValue.textContent = String(level);
+  statusElement.textContent = classification;
+  statusElement.className =
+    "value " + classification.toLowerCase();
+
+  const messages = {
+    NORMAL: "Continue monitoring.",
+    WARNING: "Elevated simulated level. Review the trend.",
+    HIGH: "High-level alert. Investigate the cause; blockage is unconfirmed."
+  };
+
+  recommendation.textContent = messages[classification];
+
+  if (classification !== previousClassification) {
+    logEvent(
+      "Classification changed to " + classification +
+      " at simulated level " + level + " cm."
+    );
+    previousClassification = classification;
+  }
+}
+
+function finishSequence() {
+  sequenceRunning = false;
+  mitigationButton.disabled = false;
+  timers = [];
+}
+
+function runMitigation() {
+  if (sequenceRunning) return;
+
+  sequenceRunning = true;
+  mitigationButton.disabled = true;
+  actuatorStatus.textContent =
+    "Step 1/3: Simulating air agitation.";
+  logEvent("Simulated air-agitation step started. No hardware activated.");
+
+  timers.push(setTimeout(() => {
+    actuatorStatus.textContent =
+      "Step 2/3: Simulating water flushing.";
+    logEvent("Simulated water-flushing step started. No hardware activated.");
+  }, 2000));
+
+  timers.push(setTimeout(() => {
+    actuatorStatus.textContent =
+      "Step 3/3: Sequence finished. Physical effectiveness is unverified.";
+    logEvent(
+      "Simulation completed. Level unchanged; no cleaning success claimed."
+    );
+    finishSequence();
+  }, 4000));
+}
+
+function resetDemo() {
+  timers.forEach(clearTimeout);
+  finishSequence();
+  eventList.replaceChildren();
+  previousClassification = null;
+  actuatorStatus.textContent = "Simulation idle.";
+  document.getElementById("testResult").textContent =
+    "Tests not run yet.";
+  updateLevel(30);
+  logEvent("Demo reset.");
+}
+
+function runTests() {
+  const cases = [
+    { level: 0, expected: "NORMAL" },
+    { level: 49, expected: "NORMAL" },
+    { level: 50, expected: "WARNING" },
+    { level: 79, expected: "WARNING" },
+    { level: 80, expected: "HIGH" },
+    { level: 100, expected: "HIGH" }
+  ];
+
+  let passed = cases.filter(
+    test => classifyLevel(test.level) === test.expected
+  ).length;
+
+  const invalidValues = [-1, 101, NaN];
+
+  for (const value of invalidValues) {
+    try {
+      classifyLevel(value);
+    } catch (error) {
+      if (error instanceof RangeError) passed++;
+    }
+  }
+
+  const total = cases.length + invalidValues.length;
+  const result = passed + "/" + total + " tests passed.";
+  document.getElementById("testResult").textContent = result;
+  logEvent("Classification tests: " + result);
+}
+
+slider.addEventListener("input", event => {
+  updateLevel(event.target.value);
+});
+
+document.getElementById("normalButton")
+  .addEventListener("click", () => updateLevel(30));
+
+document.getElementById("warningButton")
+  .addEventListener("click", () => updateLevel(65));
+
+document.getElementById("highButton")
+  .addEventListener("click", () => updateLevel(90));
+
+mitigationButton.addEventListener("click", runMitigation);
+
+document.getElementById("resetButton")
+  .addEventListener("click", resetDemo);
+
+document.getElementById("testButton")
+  .addEventListener("click", runTests);
+
+updateLevel(30);
+logEvent("CLOGSHIELD software simulation loaded.");
+</script>
+</body>
+</html>
